@@ -1,0 +1,139 @@
+version: 2.1
+
+master_only: &master_only
+  filters:
+    branches:
+      only: master
+
+executors:
+  base:
+    docker:
+      - image: docker:19.03.12 # Image must be having Docker in Docker in order to build all 
+
+# PARAMETERS
+parameters:
+  trigger-alpine:
+    type: boolean
+    default: false
+  trigger-centos:
+    type: boolean
+    default: false
+  trigger-debian:
+    type: boolean
+    default: false
+  trigger-ubuntu:
+    type: boolean
+    default: false
+  alpine-path:
+    type: string
+    default: /root/project/os/alpine
+  centos-path:
+    type: string
+    default: /root/project/os/centos
+  debian-path:
+    type: string
+    default: /root/project/os/debian
+  ubuntu-path:
+    type: string
+    default: /root/project/os/ubuntu
+
+# WORKFLOWS
+workflows:
+  build-alpine:
+    when: 
+      or: 
+        - << pipeline.parameters.trigger-alpine >>
+    jobs:
+      - docker-build-alpine:
+          <<: *master_only
+          steps:
+            - checkout
+            - run:
+                name: Build and Push Alpine Docker Image
+                command: |
+                  docker build -t my-alpine-image .
+                  docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+                  docker tag my-alpine-image $DOCKER_USERNAME/my-alpine-image
+                  docker push $DOCKER_USERNAME/my-alpine-image
+
+      - deploy-approval:
+          <<: *master_only
+          name: 'Approval Gate AWS'
+          type: approval
+          requires:
+            - docker-build-alpine
+
+  build-centos:
+    when: 
+      or: 
+        - << pipeline.parameters.trigger-centos >>
+    jobs:
+      - docker-build-centos:
+          <<: *master_only
+ 
+          steps:
+            - checkout
+            - run:
+                name: Build and Push CentOS Docker Image
+                command: |
+                  docker build -t my-centos-image .
+                  docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+                  docker tag my-centos-image $DOCKER_USERNAME/my-centos-image
+                  docker push $DOCKER_USERNAME/my-centos-image
+
+      - deploy-approval:
+          <<: *master_only
+          name: 'Approval Gate AWS DAM1'
+          type: approval
+          requires:
+            - docker-build-centos
+
+  build-debian:
+    when: 
+      or: 
+        - << pipeline.parameters.trigger-debian >>
+    jobs:
+      - docker-build-debian:
+          <<: *master_only
+ 
+          steps:
+            - checkout
+            - run:
+                name: Build and Push Debian Docker Image
+                command: |
+                  docker build -t my-debian-image .
+                  docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+                  docker tag my-debian-image $DOCKER_USERNAME/my-debian-image
+                  docker push $DOCKER_USERNAME/my-debian-image
+
+      - deploy-approval:
+          <<: *master_only
+          name: 'Approval Gate For Debian'
+          type: approval
+          requires:
+            - docker-build-debian
+
+  build-ubuntu:
+    when: 
+      or: 
+        - << pipeline.parameters.trigger-ubuntu >>
+    jobs:
+      - docker-build-ubuntu:
+          <<: *master_only
+ 
+          steps:
+            - checkout
+            - run:
+                name: Build and Push Ubuntu Docker Image
+                command: |
+                  docker build -t my-ubuntu-image .
+                  docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+                  docker tag my-ubuntu-image $DOCKER_USERNAME/my-ubuntu-image
+                  docker push $DOCKER_USERNAME/my-ubuntu-image
+
+      - deploy-approval:
+          <<: *master_only
+          name: 'Approval Gate For Ubuntu'
+          type: approval
+          requires:
+            - docker-build-ubuntu

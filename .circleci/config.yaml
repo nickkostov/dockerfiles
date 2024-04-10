@@ -1,0 +1,18 @@
+version: 2.1
+
+setup: true
+
+orbs:
+  path-filtering: circleci/path-filtering@1.0.0
+
+workflows:
+  setup-workflow:
+    jobs:
+      - path-filtering/filter:
+          base-revision: master
+          config-path: .circleci/continue_config.yml
+          mapping: |
+            os/alpine/.* trigger-alpine true
+            os/centos/.* trigger-centos true  
+            os/debian/.* trigger-debian true
+            os/ubuntu/.* trigger-ubuntu true
