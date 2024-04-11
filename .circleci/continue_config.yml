@@ -149,10 +149,10 @@ workflows:
         - << pipeline.parameters.trigger-alpine >>
     jobs:
       - docker-build:
+          <<: *master_only
           version: "latest"
           path: "os/alpine"
           image_os: "alpine"
-          <<: *master_only
       - deploy-approval:
           <<: *master_only
           name: 'Approval Gate'
@@ -160,10 +160,13 @@ workflows:
           requires:
             - docker-build
       - docker-push:
+          <<: *master_only
           version: "latest"
           path: "os/alpine"
           image_os: "alpine"
-          <<: *master_only
+          requires:
+            - push-approval
+
   build-centos:
     when:
       or:
@@ -174,17 +177,21 @@ workflows:
           path: "os/centos"
           image_os: "centos"
           <<: *master_only
-      - deploy-approval:
+# Approval Gate
+      - push-approval:
           <<: *master_only
           name: 'Approval Gate'
           type: approval
           requires:
             - docker-build
       - docker-push:
+          <<: *master_only
           version: "latest"
           path: "os/centos"
           image_os: "centos"
-          <<: *master_only
+        requires:
+          - push-approval
+
   build-debian:
     when: 
       or: 
