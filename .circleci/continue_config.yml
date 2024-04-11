@@ -67,7 +67,7 @@ commands:
       - persist_to_workspace:
           root: .
           paths:
-            - ./image.tar
+            - <<parameters.image_os>>_<<parameters.version>>.tar
 #  docker-push:
 #    steps:
 
