@@ -61,11 +61,11 @@ commands:
       - run:
           name: Build Docker Image
           command: | 
-            docker build -t alpine:<<parameters.version>>  -f <<parameters.path>>/Dockerfile
+            docker build -t <<parameters.image_os>>:<<parameters.version>>  -f <<parameters.path>>/Dockerfile .
       - run:
           name: Tag Docker Image
           command: |
-            docker tag alpine:<<parameters.version>> docker.pkg.github.com/nickkostov/Dockerfiles/<<parameters.image_os>>:latest
+            docker tag <<parameters.image_os>>:<<parameters.version>> docker.pkg.github.com/nickkostov/Dockerfiles/<<parameters.image_os>>:latest
 
 #  docker-push:
 #    steps:
