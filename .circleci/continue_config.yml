@@ -126,6 +126,7 @@ jobs:
         default: "alpine"
         type: string
     steps:
+      - checkout
       - setup_remote_docker
       - docker-push
 
