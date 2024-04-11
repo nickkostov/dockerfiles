@@ -114,6 +114,7 @@ jobs:
           path: <<parameters.path>>
           image_os: <<parameters.image_os>>
   docker-push:
+    executor: docker-publisher
     parameters:
       version:
         default: "latest"
@@ -124,7 +125,6 @@ jobs:
       image_os:
         default: "alpine"
         type: string
-    executor: docker-publisher
     steps:
       - setup_remote_docker
       - docker-push
