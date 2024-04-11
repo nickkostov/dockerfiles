@@ -89,7 +89,7 @@ commands:
           name: Publish Docker image
           command: |
             echo "${DOCKERHUB_PASS}" | docker login --username "${DOCKERHUB_USERNAME}" --password-stdin docker.pkg.github.com
-            docker push "<<parameters.image_os>>:<<parameters.version>>"
+            docker push "docker.pkg.github.com/nickkostov/dockerfiles/<<parameters.image_os>>:latest"
 
 jobs:
   docker-build:
