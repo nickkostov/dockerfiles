@@ -165,7 +165,7 @@ workflows:
           path: "os/alpine"
           image_os: "alpine"
           requires:
-            - push-approval
+            - 'Approval Gate'
 
   build-centos:
     when:
