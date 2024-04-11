@@ -53,6 +53,11 @@ commands:
         default: "alpine"
         type: string
     steps:
+      - run: 
+          name: Check current PATH and list contents
+          command: |
+            pwd && ls -lah
+
       - run:
           name: Build Docker Image
           command: | 
