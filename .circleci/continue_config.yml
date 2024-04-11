@@ -85,11 +85,11 @@ commands:
       - run:
           name: Load Docker image
           command: docker load --input /tmp/workspace/<<parameters.image_os>>_<<parameters.version>>.tar
-#      - run:
-#          name: Publish Docker image
-#          command: |
-#            echo "${DOCKERHUB_PASS}" | docker login --username "${DOCKERHUB_USERNAME}" --password-stdin
-#            docker push "${IMAGE_TAG}"
+      - run:
+          name: Publish Docker image
+          command: |
+            echo "${DOCKERHUB_PASS}" | docker login --username "${DOCKERHUB_USERNAME}" --password-stdin
+            docker push "<<parameters.image_os>>:<<parameters.version>>"
 
 jobs:
   docker-build:
