@@ -5,15 +5,6 @@ master_only: &master_only
     branches:
       only: master
 
-executors:
-  docker-publisher:
-    environment:
-      URI: url
-      IMAGE_TAG: latest
-    docker:
-      - image: docker:stable # docker:19.03.12 # Image must be having Docker in Docker in order to build all
- 
-
 # PARAMETERS
 parameters:
   trigger-alpine:
@@ -41,6 +32,14 @@ parameters:
     type: string
     default: /root/project/os/ubuntu
 
+executors:
+  docker-publisher:
+    environment:
+      URI: url
+      IMAGE_TAG: latest
+    docker:
+      - image: docker:stable # docker:19.03.12 # Image must be having Docker in Docker in order to build all
+
 commands:
   docker-build:
     #parameters:
@@ -63,6 +62,7 @@ commands:
 jobs:
   docker-build-alpine:
     executor: docker-publisher
+#    resource_class: xlarge
     steps:
       - checkout
       - setup_remote_docker
@@ -100,9 +100,9 @@ workflows:
     jobs:
       - docker-build-alpine:
           <<: *master_only
-          steps:
-            - checkout
-            - build
+          #steps:
+          #  - checkout
+          #  - build
 
 #      - deploy-approval:
 #          <<: *master_only
