@@ -61,7 +61,7 @@ commands:
 #    steps:
 
 jobs:
-  build-alpine:
+  docker-build-alpine:
     executor: docker-publisher
     steps:
       - checkout
