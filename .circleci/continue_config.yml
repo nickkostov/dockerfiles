@@ -53,11 +53,6 @@ commands:
         default: "alpine"
         type: string
     steps:
-      - run: 
-          name: Check current PATH and list contents
-          command: |
-            pwd && ls -lah
-
       - run:
           name: Build Docker Image
           command: | 
@@ -71,16 +66,26 @@ commands:
 #    steps:
 
 jobs:
-  docker-build-alpine:
+  docker-build:
     executor: docker-publisher
 #    resource_class: xlarge
+    parameters:
+      version:
+        default: "latest"
+        type: string
+      path:
+        default: "os/alpine"
+        type: string
+      image_os:
+        default: "alpine"
+        type: string
     steps:
       - checkout
       - setup_remote_docker
-      - docker-build
-      #- run:
-      #    name: Build Docker image
-      #    command: docker build --tag "${IMAGE_TAG}" .
+      - docker-build:
+          version: <<parameters.version>>
+          path: <<parameters.path>>
+          image_os: <<parameters.image_os>>
       #- run:
       #    name: Archive Docker image
       #    command: docker save --output image.tar "${IMAGE_TAG}"
@@ -109,7 +114,10 @@ workflows:
       or: 
         - << pipeline.parameters.trigger-alpine >>
     jobs:
-      - docker-build-alpine:
+      - docker-build:
+          version: "latest"
+          path: "os/alpine"
+          image_os: "alpine"
           <<: *master_only
           #steps:
           #  - checkout
