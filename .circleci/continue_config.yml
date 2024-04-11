@@ -68,8 +68,28 @@ commands:
           root: .
           paths:
             - <<parameters.image_os>>_<<parameters.version>>.tar
-#  docker-push:
-#    steps:
+  docker-push:
+    parameters:
+      version:
+        default: "latest"
+        type: string
+      path:
+        default: "os/alpine"
+        type: string
+      image_os:
+        default: "alpine"
+        type: string
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Load Docker image
+          command: docker load --input /tmp/workspace/<<parameters.image_os>>_<<parameters.version>>.tar
+#      - run:
+#          name: Publish Docker image
+#          command: |
+#            echo "${DOCKERHUB_PASS}" | docker login --username "${DOCKERHUB_USERNAME}" --password-stdin
+#            docker push "${IMAGE_TAG}"
 
 jobs:
   docker-build:
@@ -92,13 +112,21 @@ jobs:
           version: <<parameters.version>>
           path: <<parameters.path>>
           image_os: <<parameters.image_os>>
-      #- run:
-      #    name: Archive Docker image
-      #    command: docker save --output image.tar "${IMAGE_TAG}"
-      #- persist_to_workspace:
-      #    root: .
-      #    paths:
-      #      - ./image.tar
+  docker-push:
+    parameters:
+      version:
+        default: "latest"
+        type: string
+      path:
+        default: "os/alpine"
+        type: string
+      image_os:
+        default: "alpine"
+        type: string
+    executor: docker-publisher
+    steps:
+      - setup_remote_docker
+      - docker-push
 #  push:
 #    executor: docker-publisher
 #    steps:
@@ -125,12 +153,34 @@ workflows:
           path: "os/alpine"
           image_os: "alpine"
           <<: *master_only
+      - deploy-approval:
+          <<: *master_only
+          name: 'Approval Gate'
+          type: approval
+          requires:
+            - docker-build
+      - docker-push:
+          version: "latest"
+          path: "os/alpine"
+          image_os: "alpine"
+          <<: *master_only
   build-centos:
     when:
       or:
         - << pipeline.parameters.trigger-centos >>
     jobs:
       - docker-build:
+          version: "latest"
+          path: "os/centos"
+          image_os: "centos"
+          <<: *master_only
+      - deploy-approval:
+          <<: *master_only
+          name: 'Approval Gate'
+          type: approval
+          requires:
+            - docker-build
+      - docker-push:
           version: "latest"
           path: "os/centos"
           image_os: "centos"
@@ -143,7 +193,18 @@ workflows:
       - docker-build:
           version: "latest"
           path: "os/debian"
-          image_os: "bebian"
+          image_os: "debian"
+          <<: *master_only
+      - deploy-approval:
+          <<: *master_only
+          name: 'Approval Gate'
+          type: approval
+          requires:
+            - docker-build
+      - docker-push:
+          version: "latest"
+          path: "os/debian"
+          image_os: "debian"
           <<: *master_only
   build-ubuntu:
     when: 
@@ -155,10 +216,14 @@ workflows:
           path: "os/ubuntu"
           image_os: "ubuntu"
           <<: *master_only
-
-#      - deploy-approval:
-#          <<: *master_only
-#          name: 'Approval Gate For Image'
-#          type: approval
-#          requires:
-#            - docker-build
+      - deploy-approval:
+          <<: *master_only
+          name: 'Approval Gate'
+          type: approval
+          requires:
+            - docker-build
+      - docker-push:
+          version: "latest"
+          path: "os/ubuntu"
+          image_os: "ubuntu"
+          <<: *master_only
