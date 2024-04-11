@@ -6,9 +6,13 @@ master_only: &master_only
       only: master
 
 executors:
-  base:
+  docker-publisher:
+    environment:
+      URI: url
+      IMAGE_TAG: latest
     docker:
-      - image: docker:19.03.12 # Image must be having Docker in Docker in order to build all 
+      - image: docker:stable # docker:19.03.12 # Image must be having Docker in Docker in order to build all
+ 
 
 # PARAMETERS
 parameters:
@@ -37,6 +41,50 @@ parameters:
     type: string
     default: /root/project/os/ubuntu
 
+commands:
+  docker-build:
+    parameters:
+      version:
+        default: "latest"
+        type: string
+        steps:
+          - run: docker build -t alpine #--tag "" -f /os/alpine/Dockerfile
+          - run: docker tag alpine docker.pkg.github.com/nickkostov/Dockerfiles/alpine:latest
+
+#  docker-push:
+#    steps:
+
+jobs:
+  build:
+    executor: docker-publisher
+    steps:
+      - checkout
+      - setup_remote_docker
+      - docker-build
+      #- run:
+      #    name: Build Docker image
+      #    command: docker build --tag "${IMAGE_TAG}" .
+      #- run:
+      #    name: Archive Docker image
+      #    command: docker save --output image.tar "${IMAGE_TAG}"
+      #- persist_to_workspace:
+      #    root: .
+      #    paths:
+      #      - ./image.tar
+#  push:
+#    executor: docker-publisher
+#    steps:
+#      - setup_remote_docker
+#      - attach_workspace:
+#          at: /tmp/workspace
+#      - run:
+#          name: Load Docker image
+#          command: docker load --input /tmp/workspace/image.tar
+#      - run:
+#          name: Publish Docker image
+#          command: |
+#            echo "${DOCKERHUB_PASS}" | docker login --username "${DOCKERHUB_USERNAME}" --password-stdin
+#            docker push "${IMAGE_TAG}"
 # WORKFLOWS
 workflows:
   build-alpine:
@@ -48,92 +96,87 @@ workflows:
           <<: *master_only
           steps:
             - checkout
-            - run:
-                name: Build and Push Alpine Docker Image
-                command: |
-                  docker build -t my-alpine-image .
-                  docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-                  docker tag my-alpine-image $DOCKER_USERNAME/my-alpine-image
-                  docker push $DOCKER_USERNAME/my-alpine-image
+            - build
 
-      - deploy-approval:
-          <<: *master_only
-          name: 'Approval Gate AWS'
-          type: approval
-          requires:
-            - docker-build-alpine
+#      - deploy-approval:
+#          <<: *master_only
+#          name: 'Approval Gate For Alpine'
+#          type: approval
+#          requires:
+#            - docker-build-alpine
 
-  build-centos:
-    when: 
-      or: 
-        - << pipeline.parameters.trigger-centos >>
-    jobs:
-      - docker-build-centos:
-          <<: *master_only
- 
-          steps:
-            - checkout
-            - run:
-                name: Build and Push CentOS Docker Image
-                command: |
-                  docker build -t my-centos-image .
-                  docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-                  docker tag my-centos-image $DOCKER_USERNAME/my-centos-image
-                  docker push $DOCKER_USERNAME/my-centos-image
-
-      - deploy-approval:
-          <<: *master_only
-          name: 'Approval Gate AWS DAM1'
-          type: approval
-          requires:
-            - docker-build-centos
-
-  build-debian:
-    when: 
-      or: 
-        - << pipeline.parameters.trigger-debian >>
-    jobs:
-      - docker-build-debian:
-          <<: *master_only
- 
-          steps:
-            - checkout
-            - run:
-                name: Build and Push Debian Docker Image
-                command: |
-                  docker build -t my-debian-image .
-                  docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-                  docker tag my-debian-image $DOCKER_USERNAME/my-debian-image
-                  docker push $DOCKER_USERNAME/my-debian-image
-
-      - deploy-approval:
-          <<: *master_only
-          name: 'Approval Gate For Debian'
-          type: approval
-          requires:
-            - docker-build-debian
-
-  build-ubuntu:
-    when: 
-      or: 
-        - << pipeline.parameters.trigger-ubuntu >>
-    jobs:
-      - docker-build-ubuntu:
-          <<: *master_only
- 
-          steps:
-            - checkout
-            - run:
-                name: Build and Push Ubuntu Docker Image
-                command: |
-                  docker build -t my-ubuntu-image .
-                  docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-                  docker tag my-ubuntu-image $DOCKER_USERNAME/my-ubuntu-image
-                  docker push $DOCKER_USERNAME/my-ubuntu-image
-
-      - deploy-approval:
-          <<: *master_only
-          name: 'Approval Gate For Ubuntu'
-          type: approval
-          requires:
-            - docker-build-ubuntu
+#  build-centos:
+#    when: 
+#      or: 
+#        - << pipeline.parameters.trigger-centos >>
+#    jobs:
+#      - docker-build-centos:
+#          <<: *master_only
+# 
+#          steps:
+#            - checkout
+#            - run:
+#                name: Build and Push CentOS Docker Image
+#                command: |
+#                  docker build -t my-centos-image .
+#                  docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+#                  docker tag my-centos-image $DOCKER_USERNAME/my-centos-image
+#                  docker push $DOCKER_USERNAME/my-centos-image
+#
+#      - deploy-approval:
+#          <<: *master_only
+#          name: 'Approval Gate For Centos'
+#          type: approval
+#          requires:
+#            - docker-build-centos
+#
+#  build-debian:
+#    when: 
+#      or: 
+#        - << pipeline.parameters.trigger-debian >>
+#    jobs:
+#      - docker-build-debian:
+#          <<: *master_only
+# 
+#          steps:
+#            - checkout
+#            - run:
+#                name: Build and Push Debian Docker Image
+#                command: |
+#                  docker build -t my-debian-image .
+#                  docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+#                  docker tag my-debian-image $DOCKER_USERNAME/my-debian-image
+#                  docker push $DOCKER_USERNAME/my-debian-image
+#
+#      - deploy-approval:
+#          <<: *master_only
+#          name: 'Approval Gate For Debian'
+#          type: approval
+#          requires:
+#            - docker-build-debian
+#
+#  build-ubuntu:
+#    when: 
+#      or: 
+#        - << pipeline.parameters.trigger-ubuntu >>
+#    jobs:
+#      - docker-build-ubuntu:
+#          <<: *master_only
+# 
+#          steps:
+#            - checkout
+#            - run:
+#                name: Build and Push Ubuntu Docker Image
+#                command: |
+#                  docker build -t my-ubuntu-image .
+#                  docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+#                  docker tag my-ubuntu-image $DOCKER_USERNAME/my-ubuntu-image
+#                  docker push $DOCKER_USERNAME/my-ubuntu-image
+#
+#      - deploy-approval:
+#          <<: *master_only
+#          name: 'Approval Gate For Ubuntu'
+#          type: approval
+#          requires:
+#            - docker-build-ubuntu
+#
