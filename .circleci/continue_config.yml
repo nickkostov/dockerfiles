@@ -152,10 +152,10 @@ workflows:
 
 #      - deploy-approval:
 #          <<: *master_only
-#          name: 'Approval Gate For Alpine'
+#          name: 'Approval Gate For Image'
 #          type: approval
 #          requires:
-#            - docker-build-alpine
+#            - docker-build
 
 #  build-centos:
 #    when: 
