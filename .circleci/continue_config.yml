@@ -47,7 +47,7 @@ commands:
         default: "latest"
         type: string
       path:
-        default: "/os/alpine"
+        default: "os/alpine"
         type: string
       image_os:
         default: "alpine"
