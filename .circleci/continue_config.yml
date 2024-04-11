@@ -127,20 +127,7 @@ jobs:
     steps:
       - setup_remote_docker
       - docker-push
-#  push:
-#    executor: docker-publisher
-#    steps:
-#      - setup_remote_docker
-#      - attach_workspace:
-#          at: /tmp/workspace
-#      - run:
-#          name: Load Docker image
-#          command: docker load --input /tmp/workspace/image.tar
-#      - run:
-#          name: Publish Docker image
-#          command: |
-#            echo "${DOCKERHUB_PASS}" | docker login --username "${DOCKERHUB_USERNAME}" --password-stdin
-#            docker push "${IMAGE_TAG}"
+
 # WORKFLOWS
 workflows:
   build-alpine:
@@ -173,10 +160,10 @@ workflows:
         - << pipeline.parameters.trigger-centos >>
     jobs:
       - docker-build:
+          <<: *master_only
           version: "latest"
           path: "os/centos"
           image_os: "centos"
-          <<: *master_only
 # Approval Gate
       - push-approval:
           <<: *master_only
@@ -190,7 +177,7 @@ workflows:
           path: "os/centos"
           image_os: "centos"
           requires:
-            - push-approval
+            - 'Approval Gate'
 
   build-debian:
     when: 
@@ -198,10 +185,10 @@ workflows:
         - << pipeline.parameters.trigger-debian >>
     jobs:
       - docker-build:
+          <<: *master_only
           version: "latest"
           path: "os/debian"
           image_os: "debian"
-          <<: *master_only
       - deploy-approval:
           <<: *master_only
           name: 'Approval Gate'
@@ -209,20 +196,22 @@ workflows:
           requires:
             - docker-build
       - docker-push:
+          <<: *master_only
           version: "latest"
           path: "os/debian"
           image_os: "debian"
-          <<: *master_only
+          requires:
+            - 'Approval Gate'
   build-ubuntu:
     when: 
       or: 
         - << pipeline.parameters.trigger-ubuntu >>
     jobs:
       - docker-build:
+          <<: *master_only
           version: "latest"
           path: "os/ubuntu"
           image_os: "ubuntu"
-          <<: *master_only
       - deploy-approval:
           <<: *master_only
           name: 'Approval Gate'
@@ -230,7 +219,9 @@ workflows:
           requires:
             - docker-build
       - docker-push:
+          <<: *master_only
           version: "latest"
           path: "os/ubuntu"
           image_os: "ubuntu"
-          <<: *master_only
+          requires:
+            - 'Approval Gate'
