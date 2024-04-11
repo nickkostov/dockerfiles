@@ -189,8 +189,8 @@ workflows:
           version: "latest"
           path: "os/centos"
           image_os: "centos"
-        requires:
-          - push-approval
+          requires:
+            - push-approval
 
   build-debian:
     when: 
