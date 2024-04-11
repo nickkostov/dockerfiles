@@ -128,7 +128,10 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
-      - docker-push
+      - docker-push:
+          version: <<parameters.version>>
+          path: <<parameters.path>>
+          image_os: <<parameters.image_os>>
 
 # WORKFLOWS
 workflows:
