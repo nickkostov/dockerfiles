@@ -129,7 +129,26 @@ workflows:
           path: "os/centos"
           image_os: "centos"
           <<: *master_only
-
+  build-debian:
+    when: 
+      or: 
+        - << pipeline.parameters.trigger-debian >>
+    jobs:
+      - docker-build:
+          version: "latest"
+          path: "os/debian"
+          image_os: "bebian"
+          <<: *master_only
+  build-ubuntu:
+    when: 
+      or: 
+        - << pipeline.parameters.trigger-ubuntu >>
+    jobs:
+      - docker-build:
+          version: "latest"
+          path: "os/ubuntu"
+          image_os: "ubuntu"
+          <<: *master_only
 
 #      - deploy-approval:
 #          <<: *master_only
