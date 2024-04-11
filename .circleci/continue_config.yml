@@ -119,9 +119,17 @@ workflows:
           path: "os/alpine"
           image_os: "alpine"
           <<: *master_only
-          #steps:
-          #  - checkout
-          #  - build
+  build-centos:
+    when:
+      or:
+        - << pipeline.parameters.trigger-centos >>
+    jobs:
+      - docker-build:
+          version: "latest"
+          path: "os/centos"
+          image_os: "centos"
+          <<: *master_only
+
 
 #      - deploy-approval:
 #          <<: *master_only
