@@ -7,3 +7,4 @@ LABEL org.opencontainers.image.description="" \
       org.opencontainers.image.source="https://github.com/nickkostov/dockerfiles/os/debian"
 
 # Add any specific configurations or packages here
+RUN apt install apache2 -y
