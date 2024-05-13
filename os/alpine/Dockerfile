@@ -11,3 +11,5 @@ LABEL org.opencontainers.image.description="" \
 RUN apk add --update --no-cache python3
 
 # Testing localyhosted executor
+
+# Testing the buildah

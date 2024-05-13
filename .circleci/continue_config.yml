@@ -56,14 +56,15 @@ commands:
       - run:
           name: Build Docker Image
           command: | 
-            docker build -t <<parameters.image_os>>:<<parameters.version>>  -f <<parameters.path>>/Dockerfile .
+            docker build -t <<parameters.image_os>>:<<parameters.version>>  -f <<parameters.path>>/Dockerfile . || buildah bud -t <<parameters.image_os>>:<<parameters.version>> -f <<parameters.path>>/Dockerfile .
       - run:
           name: Tag Docker Image
           command: |
-            docker tag <<parameters.image_os>>:<<parameters.version>> docker.pkg.github.com/nickkostov/dockerfiles/<<parameters.image_os>>:latest
+            docker tag <<parameters.image_os>>:<<parameters.version>> docker.pkg.github.com/nickkostov/dockerfiles/<<parameters.image_os>>:latest || buildah tag <<parameters.image_os>>:<<parameters.version>> docker.pkg.github.com/nickkostov/dockerfiles/<<parameters.image_os>>:latest
       - run:
           name: Archive Docker image <<parameters.image_os>>:<<parameters.version>>
-          command: docker save --output <<parameters.image_os>>_<<parameters.version>>.tar "<<parameters.image_os>>:<<parameters.version>>"
+          command: docker save --output <<parameters.image_os>>_<<parameters.version>>.tar "<<parameters.image_os>>:<<parameters.version>>" || buildah save --output <<parameters.image_os>>_<<parameters.version>>.tar "<<parameters.image_os>>:<<parameters.version>>"
+
       - persist_to_workspace:
           root: .
           paths:
@@ -84,13 +85,14 @@ commands:
           at: /tmp/workspace
       - run:
           name: Load Docker image
-          command: docker load --input /tmp/workspace/<<parameters.image_os>>_<<parameters.version>>.tar
+          command: docker load --input /tmp/workspace/<<parameters.image_os>>_<<parameters.version>>.tar || tar xf /tmp/workspace/<<parameters.image_os>>_<<parameters.version>>.tar -O | buildah add - <<parameters.image_os>>:<<parameters.version>>.tar
+
       - run:
           name: Publish Docker image
           command: |
-            echo "${DOCKERHUB_PASS}" | docker login --username "${DOCKERHUB_USERNAME}" --password-stdin docker.pkg.github.com
-            docker tag <<parameters.image_os>>:<<parameters.version>> docker.pkg.github.com/nickkostov/dockerfiles/<<parameters.image_os>>:latest
-            docker push "docker.pkg.github.com/nickkostov/dockerfiles/<<parameters.image_os>>:latest"
+            echo "${DOCKERHUB_PASS}" | docker login --username "${DOCKERHUB_USERNAME}" --password-stdin docker.pkg.github.com || echo "${DOCKERHUB_PASS}" | buildah login --username $DOCKERHUB_USERNAME --password-stdin docker.pkg.github.com
+            docker tag <<parameters.image_os>>:<<parameters.version>> docker.pkg.github.com/nickkostov/dockerfiles/<<parameters.image_os>>:latest || buildah tag <<parameters.image_os>>:<<parameters.version>> docker.pkg.github.com/nickkostov/dockerfiles/<<parameters.image_os>>:latest
+            docker push "docker.pkg.github.com/nickkostov/dockerfiles/<<parameters.image_os>>:latest" || buildah push <<parameters.image_os>> docker.pkg.github.com/nickkostov/dockerfiles/<<parameters.image_os>>:latest
 
 jobs:
   docker-build:
