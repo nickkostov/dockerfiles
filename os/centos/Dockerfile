@@ -6,3 +6,5 @@ LABEL org.opencontainers.image.description="" \
       org.opencontainers.image.documentation="https://github.com/nickkostov/dockerfiles/os/centos/README.md" \
       org.opencontainers.image.source="https://github.com/nickkostov/dockerfiles/os/centos"
 # Add any specific configurations or packages here
+
+

@@ -38,7 +38,8 @@ executors:
       URI: url
       IMAGE_TAG: latest
     docker:
-      - image: docker:stable # docker:19.03.12 # Image must be having Docker in Docker in order to build all
+      #- image: docker:stable # docker:19.03.12 # Image must be having Docker in Docker in order to build all
+      - image: quay.io/buildah/stable
 
 commands:
   docker-build:
