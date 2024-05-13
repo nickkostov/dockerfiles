@@ -95,7 +95,7 @@ commands:
 jobs:
   docker-build:
     executor: docker-publisher
-#    resource_class: xlarge
+    resource_class: nickkostov/docker-machine
     parameters:
       version:
         default: "latest"
@@ -115,6 +115,7 @@ jobs:
           image_os: <<parameters.image_os>>
   docker-push:
     executor: docker-publisher
+    resource_class: nickkostov/docker-machine
     parameters:
       version:
         default: "latest"
