@@ -108,7 +108,7 @@ jobs:
         type: string
     steps:
       - checkout
-      - setup_remote_docker
+    #  - setup_remote_docker
       - docker-build:
           version: <<parameters.version>>
           path: <<parameters.path>>
@@ -128,7 +128,7 @@ jobs:
         type: string
     steps:
       - checkout
-      - setup_remote_docker
+    #  - setup_remote_docker
       - docker-push:
           version: <<parameters.version>>
           path: <<parameters.path>>
